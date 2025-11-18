@@ -1,0 +1,30 @@
+-- Use Case: Run computational code without accessing database state.
+-- What it does :
+-- Code runs isolated from database objects.
+-- Ideal for running third-party libraries or computations securely.
+-- Only allows input/output operations.
+
+-- Step 1: Create a PURE JavaScript Module
+CREATE OR REPLACE MLE MODULE pure_module
+LANGUAGE JAVASCRIPT AS
+export function addNumbers(a, b) {
+    console.log(`Sum is: ${a + b}`);
+}
+/
+
+-- Step 2: Create a PURE Environment
+CREATE OR REPLACE MLE ENV pure_env
+IMPORTS('pure_module' MODULE pure_module) PURE;
+/
+
+-- Step 3: Create a Call Specification Using PURE Environment
+CREATE OR REPLACE PROCEDURE add_numbers_proc(p_a NUMBER, p_b NUMBER)
+AS MLE MODULE pure_module ENV pure_env
+SIGNATURE 'addNumbers(num,num)';
+/
+
+-- Step 4: Execute the Procedure
+BEGIN
+    add_numbers_proc(10, 20);
+END;
+/
